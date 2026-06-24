@@ -65,4 +65,6 @@ npm start
 
 ## 许可证
 
-MIT
+本项目基于 [GNU Affero General Public License v3.0](LICENSE)（AGPL-3.0）开源。
+
+简而言之：你可以自由使用、修改和分发本项目；但**任何修改后的版本（包括通过网络提供服务的版本）必须同样以 AGPL-3.0 开源全部源代码**。详见 [LICENSE](LICENSE) 文件。

@@ -2,6 +2,7 @@
   "name": "ssca-idea-editor",
   "version": "1.0.0",
   "description": "SSCA思路编辑器 本地桌面应用",
+  "license": "AGPL-3.0-or-later",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
