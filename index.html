@@ -177,6 +177,17 @@
   .mm-actions { display: flex; gap: 6px; flex: 0 0 auto; }
   .mm-actions .btn { padding: 6px 11px; font-size: 12.5px; }
   #mapBtn { font-weight: 600; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #inputModal { position: absolute; inset: 0; background: rgba(30,32,45,.45); display: none;
+    align-items: center; justify-content: center; z-index: 60; }
+  #inputModal.show { display: flex; }
+  #inputModal .card { background: var(--panel); border-radius: 14px; padding: 20px 22px; width: 380px;
+    max-width: 90%; box-shadow: var(--shadow-strong); }
+  #inputModal h3 { margin: 0 0 12px; font-size: 15px; }
+  #inputModal input { width: 100%; border: 1.5px solid var(--node-border); border-radius: 9px; padding: 9px 11px;
+    font: inherit; font-size: 14px; color: var(--ink); background: var(--input-bg);
+    -webkit-user-select: text; user-select: text; }
+  #inputModal input:focus { outline: none; border-color: var(--accent); background: var(--panel); }
+  .im-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 </style>
 </head>
 <body>
@@ -237,6 +248,17 @@
       </div>
       <div class="mm-list" id="mapList"></div>
       <button class="btn" id="mapMgrClose" style="width:100%;margin-top:4px">关闭</button>
+    </div>
+  </div>
+
+  <div id="inputModal">
+    <div class="card">
+      <h3 id="imTitle">输入</h3>
+      <input type="text" id="imInput" autocomplete="off" spellcheck="false" />
+      <div class="im-actions">
+        <button class="btn" id="imCancel">取消</button>
+        <button class="btn primary" id="imOk">确定</button>
+      </div>
     </div>
   </div>
   <div id="toast"></div>
@@ -701,17 +723,17 @@
     for (const k in nodeEls) { nodeEls[k].remove(); delete nodeEls[k]; }
     draw(); renderInspector(); updateMapName();
   }
-  function newMap() {
+  async function newMap() {
     const def = "导图 " + (maps.length + 1);
-    const name = prompt("新导图名称：", def);
+    const name = await promptInput("新建导图 · 起个名字", def);
     if (name === null) return;
     const id = uid();
     maps.push({ id: id, name: name.trim() || def }); saveMaps();
     try { localStorage.setItem(mapKey(id), JSON.stringify(freshState())); } catch (e) {}
     switchMap(id); mapMgr.classList.remove("show"); toast("已创建并进入新导图");
   }
-  function renameMap(m) {
-    const name = prompt("重命名导图：", m.name);
+  async function renameMap(m) {
+    const name = await promptInput("重命名导图", m.name);
     if (name === null) return;
     m.name = name.trim() || m.name; saveMaps(); renderMapList(); updateMapName();
   }
@@ -740,6 +762,32 @@
     else if (btn.dataset.act === "rename") renameMap(m);
     else if (btn.dataset.act === "del") deleteMap(m);
   });
+
+  const inputModal = document.getElementById("inputModal");
+  const imInput = document.getElementById("imInput");
+  const imTitle = document.getElementById("imTitle");
+  let imResolve = null;
+  function promptInput(title, def) {
+    return new Promise(resolve => {
+      imResolve = resolve;
+      imTitle.textContent = title;
+      imInput.value = def || "";
+      inputModal.classList.add("show");
+      setTimeout(() => { imInput.focus(); imInput.select(); }, 0);
+    });
+  }
+  function imClose(val) {
+    inputModal.classList.remove("show");
+    const r = imResolve; imResolve = null;
+    if (r) r(val);
+  }
+  document.getElementById("imOk").onclick = () => imClose(imInput.value);
+  document.getElementById("imCancel").onclick = () => imClose(null);
+  imInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); imClose(imInput.value); }
+    else if (e.key === "Escape") { e.preventDefault(); imClose(null); }
+  });
+  inputModal.addEventListener("click", e => { if (e.target === inputModal) imClose(null); });
 
   let toastTimer = null;
   function toast(msg) {
