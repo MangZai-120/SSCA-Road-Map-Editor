@@ -80,6 +80,8 @@
   }
   #viewport.panning { cursor: grabbing; }
   #viewport.connecting { cursor: crosshair; }
+  #viewport.linking { cursor: crosshair; }
+  #viewport.linking .node { cursor: crosshair; }
   #world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
   #edges { position: absolute; left: 0; top: 0; overflow: visible; width: 1px; height: 1px; pointer-events: none; }
   #edges path.hit { stroke: transparent; stroke-width: 16; fill: none; pointer-events: stroke; cursor: pointer; }
@@ -99,10 +101,21 @@
   .node.linktarget { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
   .node .bar { height: 6px; background: var(--accent); }
   .node .body { padding: 11px 13px 12px; }
+  .node .wbadge { display: inline-block; font-size: 10.5px; font-weight: 700; line-height: 1;
+    padding: 3px 7px; border-radius: 7px; margin-bottom: 6px;
+    background: var(--accent-soft); color: var(--accent); }
+  .node .wbadge.root { background: #ffe2a8; color: #8a5500; }
+  :root[data-theme="dark"] .node .wbadge.root { background: #4a3a12; color: #ffcf6e; }
   .node .t-big { font-size: 15px; font-weight: 700; line-height: 1.3; word-break: break-word; }
-  .node .t-small { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; word-break: break-word; }
-  .node .dot { position: absolute; right: 9px; top: 11px; width: 9px; height: 9px; border-radius: 50%;
-    background: var(--accent); opacity: .5; }
+  .node .t-small { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; word-break: break-word; white-space: pre-wrap; }
+  .node .dot { position: absolute; right: 10px; top: 10px; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--accent); opacity: .55; cursor: crosshair; z-index: 5;
+    border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--accent);
+    transition: opacity .15s, transform .12s, box-shadow .15s; }
+  .node:hover .dot { opacity: .9; }
+  .node .dot:hover { opacity: 1; transform: scale(1.25); }
+  .node .dot.active { opacity: 1; transform: scale(1.3);
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 4px var(--accent); }
   .node .rz { position: absolute; z-index: 3; }
   .node .rz-e { top: 0; right: 0; width: 8px; height: 100%; cursor: ew-resize; }
   .node .rz-s { left: 0; bottom: 0; height: 8px; width: 100%; cursor: ns-resize; }
@@ -127,7 +140,11 @@
     -webkit-user-select: text; user-select: text;
   }
   .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); background: var(--panel); }
+  .field input:read-only { opacity: .6; cursor: not-allowed; }
   .field textarea { min-height: 150px; line-height: 1.55; }
+  .field .wauto { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);
+    font-weight: 400; margin-bottom: 7px; cursor: pointer; }
+  .field .wauto input { width: auto; margin: 0; }
   .insp-actions { display: flex; gap: 8px; margin-top: 4px; }
   .insp-actions .btn { flex: 1; text-align: center; }
 
@@ -212,7 +229,7 @@
       <div id="world">
         <svg id="edges"></svg>
       </div>
-      <div id="hint">左键拖空白移动画布 ・ 右键从节点拖到另一节点连线 ・ 双击空白新建节点</div>
+      <div id="hint">左键拖空白移动画布 ・ 右键拖节点连线 / 点右上角圆点再点另一节点连线 ・ 双击空白新建节点</div>
     </div>
 
     <div id="inspector">
@@ -231,7 +248,9 @@
         <li><span class="k">左键拖空白</span> 移动整张画布（平移）</li>
         <li><span class="k">左键拖节点</span> 移动该节点位置</li>
         <li><span class="k">右键按住节点 → 拖到另一节点</span> 用曲线把两者连接起来</li>
-        <li><span class="k">单击节点</span> 右侧操作栏显示大标题 / 小标题 / 备注，可编辑</li>
+        <li><span class="k">单击节点右上角圆点 → 再单击另一节点</span> 点选式连线（无需拖拽）</li>
+        <li><span class="k">单击节点</span> 右侧操作栏可编辑大标题 / 权重 / 小标题 / 备注</li>
+        <li><span class="k">权重</span> 每个节点可填非负整数，0=根节点，数值越大权重越小</li>
         <li><span class="k">双击空白</span> 在此处新建一个节点</li>
         <li><span class="k">单击连线</span> 选中连线，按 <span class="k">Delete</span> 删除</li>
         <li><span class="k">滚轮</span> 缩放画布 ・ <span class="k">Delete</span> 删除选中节点 ・ <span class="k">Esc</span> 取消</li>
@@ -329,8 +348,8 @@
         el = document.createElement("div");
         el.className = "node";
         el.dataset.id = n.id;
-        el.innerHTML = '<div class="bar"></div><span class="dot"></span>' +
-                       '<div class="body"><div class="t-big"></div><div class="t-small"></div></div>' +
+        el.innerHTML = '<div class="bar"></div><span class="dot" title="连线点：点我，再点另一个节点即可连线"></span>' +
+                       '<div class="body"><span class="wbadge"></span><div class="t-big"></div><div class="t-small"></div></div>' +
                        '<div class="rz rz-e"></div><div class="rz rz-s"></div><div class="rz rz-se"></div>';
         world.appendChild(el);
         nodeEls[n.id] = el;
@@ -341,6 +360,10 @@
       el.style.height = n.h ? n.h + "px" : "";
       const big = el.querySelector(".t-big");
       const small = el.querySelector(".t-small");
+      const wbadge = el.querySelector(".wbadge");
+      const wv = (n.weight == null) ? 0 : n.weight;
+      wbadge.textContent = (wv === 0) ? "根节点" : ("权重 " + wv);
+      wbadge.classList.toggle("root", wv === 0);
       big.textContent = n.big || "未命名";
       small.textContent = n.small || "（小标题）";
       el.classList.toggle("sel", selNode && selNode.id === n.id);
@@ -374,20 +397,60 @@
       inspSub.textContent = "修改标题与备注，自动保存";
       inspContent.innerHTML =
         '<div class="field"><label>大标题（实例名字）</label><input id="fBig" type="text" placeholder="例如：使魔·火球术"></div>' +
-        '<div class="field"><label>小标题（大致说法）</label><input id="fSmall" type="text" placeholder="例如：消耗法力的远程火球"></div>' +
+        '<div class="field"><label>权重（0=根节点 ・ 数值越大权重越小）</label>' +
+          '<label class="wauto"><input id="fWeightAuto" type="checkbox"> 自动按上游连接计算（取上游最大权重 +1）</label>' +
+          '<input id="fWeight" type="number" min="0" step="1" placeholder="手动指定一个非负整数"></div>' +
+        '<div class="field"><label>小标题（大致说法，可按回车换行）</label><textarea id="fSmall" placeholder="例如：消耗法力的远程火球"></textarea></div>' +
         '<div class="field"><label>备注</label><textarea id="fNote" placeholder="在这里写详细思路 / 数值 / 待办……"></textarea></div>' +
         '<div class="insp-actions">' +
           '<button class="btn" id="dupBtn">复制节点</button>' +
           '<button class="btn danger" id="delBtn">删除节点</button>' +
         '</div>';
       const fBig = document.getElementById("fBig");
+      const fWeight = document.getElementById("fWeight");
+      const fWeightAuto = document.getElementById("fWeightAuto");
       const fSmall = document.getElementById("fSmall");
       const fNote = document.getElementById("fNote");
+      const wNode = selNode;
+      const isAuto = wNode.weightAuto !== false;
       fBig.value = selNode.big || "";
+      fWeightAuto.checked = isAuto;
+      fWeight.value = (wNode.weight == null) ? 0 : wNode.weight;
+      fWeight.readOnly = isAuto;
       fSmall.value = selNode.small || "";
       fNote.value = selNode.note || "";
       fBig.oninput   = () => { selNode.big = fBig.value; syncNodes(); scheduleSave(); };
+      fWeightAuto.onchange = () => {
+        wNode.weightAuto = fWeightAuto.checked;
+        fWeight.readOnly = fWeightAuto.checked;
+        recomputeWeights();
+        fWeight.value = (wNode.weight == null) ? 0 : wNode.weight;
+        syncNodes(); scheduleSave();
+      };
+      fWeight.oninput = () => {
+        if (fWeightAuto.checked) return;
+        const raw = fWeight.value.trim();
+        if (raw === "") return;
+        const v = Math.floor(Number(raw));
+        if (!isFinite(v) || v < 0) return;
+        wNode.weight = v; wNode.weightAuto = false;
+        recomputeWeights(); syncNodes(); scheduleSave();
+      };
+      fWeight.onblur = () => {
+        if (fWeightAuto.checked) return;
+        let v = Math.floor(Number(fWeight.value));
+        if (!isFinite(v) || v < 0) v = (wNode.weight == null ? 0 : wNode.weight);
+        wNode.weight = v; wNode.weightAuto = false;
+        recomputeWeights(); fWeight.value = v; syncNodes(); scheduleSave();
+      };
       fSmall.oninput = () => { selNode.small = fSmall.value; syncNodes(); scheduleSave(); };
+      const subNode = selNode;
+      fSmall.onblur  = () => {
+        const cleaned = cleanSubtitle(subNode.small || "");
+        if (cleaned !== (subNode.small || "")) {
+          subNode.small = cleaned; fSmall.value = cleaned; syncNodes(); scheduleSave();
+        }
+      };
       fNote.oninput  = () => { selNode.note = fNote.value; scheduleSave(); };
       document.getElementById("delBtn").onclick = () => deleteNode(selNode);
       document.getElementById("dupBtn").onclick = () => duplicateNode(selNode);
@@ -424,23 +487,26 @@
 
   function addNode(wx, wy, big, small) {
     const n = { id: state.nextId++, x: wx - NODE_W / 2, y: wy - 30, w: NODE_W,
-                big: big || "新节点", small: small || "点我编辑小标题", note: "" };
-    state.nodes.push(n); save(); draw(); select(n); return n;
+                big: big || "新节点", small: small || "点我编辑小标题", note: "", weight: 0, weightAuto: true };
+    state.nodes.push(n); recomputeWeights(); save(); draw(); select(n); return n;
   }
   function duplicateNode(n) {
     const c = { id: state.nextId++, x: n.x + 28, y: n.y + 28, w: n.w || NODE_W,
-                big: n.big, small: n.small, note: n.note };
-    state.nodes.push(c); save(); draw(); select(c); toast("已复制节点");
+                big: n.big, small: n.small, note: n.note,
+                weight: (n.weight == null ? 0 : n.weight), weightAuto: n.weightAuto !== false };
+    state.nodes.push(c); recomputeWeights(); save(); draw(); select(c); toast("已复制节点");
   }
   function deleteNode(n) {
     state.nodes = state.nodes.filter(x => x.id !== n.id);
     state.edges = state.edges.filter(e => e.from !== n.id && e.to !== n.id);
     if (selNode && selNode.id === n.id) selNode = null;
+    recomputeWeights();
     save(); draw(); renderInspector(); toast("已删除节点");
   }
   function deleteEdge(e) {
     state.edges = state.edges.filter(x => x.id !== e.id);
     if (selEdge && selEdge.id === e.id) selEdge = null;
+    recomputeWeights();
     save(); draw(); renderInspector(); toast("已删除连线");
   }
   function connect(fromId, toId) {
@@ -449,11 +515,35 @@
       toast("这两个节点已经连过了"); return;
     }
     state.edges.push({ id: "e" + (state.nextId++), from: fromId, to: toId });
-    save(); renderEdges(); renderInspector(); toast("已连接");
+    recomputeWeights();
+    save(); syncNodes(); renderEdges(); renderInspector(); toast("已连接");
   }
 
   let mode = "idle";
   let dragInfo = null;
+  let linkSource = null;
+
+  function startLinkSource(id, e) {
+    linkSource = id;
+    tempWire = { from: id, to: screenToWorld(e.clientX, e.clientY) };
+    viewport.classList.add("linking");
+    for (const k in nodeEls) {
+      const d = nodeEls[k].querySelector(".dot");
+      if (d) d.classList.toggle("active", String(k) === String(id));
+    }
+    renderEdges();
+    toast("已开始连线 ・ 点击另一个节点完成 ・ Esc 取消");
+  }
+  function cancelLinkSource() {
+    linkSource = null; tempWire = null;
+    viewport.classList.remove("linking");
+    for (const k in nodeEls) {
+      nodeEls[k].classList.remove("linktarget");
+      const d = nodeEls[k].querySelector(".dot");
+      if (d) d.classList.remove("active");
+    }
+    renderEdges();
+  }
 
   viewport.addEventListener("contextmenu", e => e.preventDefault());
   document.addEventListener("contextmenu", e => { const t = e.target; if (t && t.closest && t.closest("input, textarea")) return; e.preventDefault(); }, true);
@@ -462,9 +552,27 @@
     const nodeEl = e.target.closest(".node");
     const hitEdge = e.target.closest("path.hit");
 
+    // 点选式连线进行中：点节点=完成连线，点别处=取消
+    if (linkSource != null) {
+      if (e.button === 0 && nodeEl) {
+        const n = state.nodes.find(x => String(x.id) === nodeEl.dataset.id);
+        if (n && String(n.id) !== String(linkSource)) connect(linkSource, n.id);
+      }
+      cancelLinkSource();
+      e.preventDefault();
+      return;
+    }
+
     if (nodeEl) {
       const n = state.nodes.find(x => String(x.id) === nodeEl.dataset.id);
       if (!n) return;
+      const dotEl = e.target.closest(".dot");
+      if (e.button === 0 && dotEl) {
+        select(n);
+        startLinkSource(n.id, e);
+        e.preventDefault();
+        return;
+      }
       const rz = e.target.closest(".rz-e, .rz-s, .rz-se");
       if (e.button === 0 && rz) {
         select(n);
@@ -535,6 +643,13 @@
       for (const id in nodeEls) nodeEls[id].classList.remove("linktarget");
       if (tgt && tgt.dataset.id !== String(dragInfo.from)) tgt.classList.add("linktarget");
       renderEdges();
+    } else if (linkSource != null && tempWire) {
+      tempWire.to = screenToWorld(e.clientX, e.clientY);
+      const overEl = document.elementFromPoint(e.clientX, e.clientY);
+      const tgt = overEl && overEl.closest(".node");
+      for (const id in nodeEls) nodeEls[id].classList.remove("linktarget");
+      if (tgt && tgt.dataset.id !== String(linkSource)) tgt.classList.add("linktarget");
+      renderEdges();
     }
   });
 
@@ -587,6 +702,7 @@
       else if (selEdge) deleteEdge(selEdge);
     } else if (e.key === "Escape") {
       if (mode === "connect") { tempWire = null; renderEdges(); mode = "idle"; viewport.classList.remove("connecting"); }
+      if (linkSource != null) cancelLinkSource();
       select(null, null);
     }
   });
@@ -603,6 +719,7 @@
       const raw = localStorage.getItem(mapKey(currentMapId));
       if (raw) { const d = JSON.parse(raw); if (d && d.nodes) state = Object.assign(freshState(), d); }
     } catch (err) {}
+    recomputeWeights();
   }
 
   document.getElementById("addBtn").onclick = () => {
@@ -651,6 +768,7 @@
         const d = JSON.parse(reader.result);
         if (!d.nodes) throw new Error("格式不对");
         state = Object.assign({ nextId: 1, pan: { x: 120, y: 90 }, zoom: 1 }, d);
+        recomputeWeights();
         selNode = selEdge = null; save(); draw(); renderInspector(); toast("已导入");
       } catch (err) { toast("导入失败：文件格式不正确"); }
     };
@@ -677,6 +795,41 @@
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function loadMaps() { try { return JSON.parse(localStorage.getItem(MAPS_KEY)) || []; } catch (e) { return []; } }
   function saveMaps() { try { localStorage.setItem(MAPS_KEY, JSON.stringify(maps)); } catch (e) {} }
+  function recomputeWeights() {
+    const incoming = {}, byId = {};
+    for (const n of state.nodes) { incoming[n.id] = []; byId[n.id] = n; }
+    for (const ed of state.edges) {
+      if (incoming[ed.to] !== undefined && byId[ed.from]) incoming[ed.to].push(ed.from);
+    }
+    let changed = true, guard = 0;
+    const maxIter = state.nodes.length + 2;
+    while (changed && guard++ < maxIter) {
+      changed = false;
+      for (const n of state.nodes) {
+        if (n.weightAuto === false) continue;
+        const ups = incoming[n.id];
+        let val = 0;
+        if (ups && ups.length) {
+          let mx = 0;
+          for (const fid of ups) {
+            const up = byId[fid];
+            const uw = (up && up.weight != null) ? up.weight : 0;
+            if (uw > mx) mx = uw;
+          }
+          val = mx + 1;
+        }
+        if (n.weight !== val) { n.weight = val; changed = true; }
+      }
+    }
+  }
+  function cleanSubtitle(s) {
+    return String(s)
+      .replace(/\r\n?/g, "\n")                       // 统一换行符
+      .replace(/[ \t\u3000]+$/gm, "")                // 去每行行尾空白（半/全角空格、Tab）
+      .replace(/\n{2,}/g, "\n")                      // 折叠多余空行：连续换行 → 单换行
+      .replace(/^\n+|\n+$/g, "")                     // 去首尾空行
+      .replace(/^[ \t\u3000]+|[ \t\u3000]+$/g, "");  // 去整体首尾空格
+  }
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
   function ensureMaps() {
     maps = loadMaps();
