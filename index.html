@@ -335,9 +335,109 @@
     viewport.style.backgroundSize = `${GRID * state.zoom}px ${GRID * state.zoom}px`;
   }
 
-  function curve(p1, p2) {
+  // 基础三次贝塞尔（水平控制点偏移）
+  function bezier(p1, p2, c1, c2) {
+    return `M ${p1.x} ${p1.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${p2.x} ${p2.y}`;
+  }
+  // 简单水平贝塞尔（原 curve 行为）
+  function curveSimple(p1, p2) {
     const off = Math.max(46, Math.abs(p2.x - p1.x) * 0.5);
-    return `M ${p1.x} ${p1.y} C ${p1.x + off} ${p1.y}, ${p2.x - off} ${p2.y}, ${p2.x} ${p2.y}`;
+    return bezier(p1, p2, { x: p1.x + off, y: p1.y }, { x: p2.x - off, y: p2.y });
+  }
+
+  // 节点矩形（世界坐标，含小边距）
+  function nodeBox(n) {
+    const s = nodeSize(n);
+    const PAD = 6;
+    return { x: n.x - PAD, y: n.y - PAD, w: s.w + PAD * 2, h: s.h + PAD * 2, id: n.id };
+  }
+  // 点是否在矩形内
+  function ptInBox(pt, b) {
+    return pt.x >= b.x && pt.x <= b.x + b.w && pt.y >= b.y && pt.y <= b.y + b.h;
+  }
+  // 线段(pt1-pt2)与矩形相交检测（含端点在框内）
+  function segHitsBox(p1, p2, b) {
+    if (ptInBox(p1, b) || ptInBox(p2, b)) return true;
+    // 检测线段与矩形四条边的相交
+    const r = { x1: b.x, y1: b.y, x2: b.x + b.w, y2: b.y + b.h };
+    return segIntersect(p1.x, p1.y, p2.x, p2.y, r.x1, r.y1, r.x2, r.y1)
+        || segIntersect(p1.x, p1.y, p2.x, p2.y, r.x1, r.y2, r.x2, r.y2)
+        || segIntersect(p1.x, p1.y, p2.x, p2.y, r.x1, r.y1, r.x1, r.y2)
+        || segIntersect(p1.x, p1.y, p2.x, p2.y, r.x2, r.y1, r.x2, r.y2);
+  }
+  function segIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+    const d = (x2 - x1) * (y4 - y3) - (y2 - y1) * (x4 - x3);
+    if (Math.abs(d) < 1e-9) return false;
+    const t = ((x3 - x1) * (y4 - y3) - (y3 - y1) * (x4 - x3)) / d;
+    const u = ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1)) / d;
+    return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+  }
+  // 三次贝塞尔曲线是否穿过任一障碍节点框（排除起讫）
+  function curveHitsBoxes(p1, c1, c2, p2, boxes) {
+    // 近似：采样控制多边形线段 + 曲线若干点连线
+    const pts = [p1, c1, c2, p2];
+    for (let i = 0; i < pts.length - 1; i++) {
+      for (const b of boxes) {
+        if (segHitsBox(pts[i], pts[i + 1], b)) return true;
+      }
+    }
+    // 再采样曲线本体 12 段
+    let prev = p1;
+    for (let i = 1; i <= 12; i++) {
+      const t = i / 12;
+      const it = 1 - t;
+      const pt = {
+        x: it * it * it * p1.x + 3 * it * it * t * c1.x + 3 * it * t * t * c2.x + t * t * t * p2.x,
+        y: it * it * it * p1.y + 3 * it * it * t * c1.y + 3 * it * t * t * c2.y + t * t * t * p2.y
+      };
+      for (const b of boxes) {
+        if (segHitsBox(prev, pt, b)) return true;
+      }
+      prev = pt;
+    }
+    return false;
+  }
+
+  // 避障曲线：枚举候选控制点方案，选碰撞最少、路径最短的
+  function curve(p1, p2, fromId, toId) {
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const off = Math.max(46, Math.abs(dx) * 0.5);
+    // 障碍：除起讫外的所有节点
+    const boxes = state.nodes
+      .filter(n => n.id !== fromId && n.id !== toId)
+      .map(nodeBox);
+
+    // 候选控制点方案：[c1偏移, c2偏移]，相对简单水平贝塞尔
+    // 水平基线 + 垂直方向上下绕 + 较大弧度
+    const cands = [];
+    const perpX = -dy / len, perpY = dx / len; // 垂直方向单位向量
+    // 0: 简单水平（原样）
+    cands.push({ c1: { x: p1.x + off, y: p1.y }, c2: { x: p2.x - off, y: p2.y }, bias: 0 });
+    // 1-N: 向上下两侧绕（用垂直方向偏移控制点）
+    const arcs = [0.4, 0.8, 1.4, 2.2];
+    for (const sign of [1, -1]) {
+      for (const a of arcs) {
+        const k = a * Math.max(60, len * 0.3) * sign;
+        cands.push({
+          c1: { x: p1.x + off + perpX * k, y: p1.y + perpY * k },
+          c2: { x: p2.x - off + perpX * k, y: p2.y + perpY * k },
+          bias: k
+        });
+      }
+    }
+
+    let best = null, bestScore = Infinity;
+    for (const c of cands) {
+      const hit = curveHitsBoxes(p1, c.c1, c.c2, p2, boxes);
+      // 评分：碰撞=重罚(1000) + 偏移幅度(控制点离基线越远越丑，轻微惩罚) + 路径长度
+      const cpathLen = Math.hypot(c.c1.x - p1.x, c.c1.y - p1.y) + Math.hypot(c.c2.x - c.c1.x, c.c2.y - c.c1.y) + Math.hypot(p2.x - c.c2.x, p2.y - c.c2.y);
+      const score = (hit ? 1000 : 0) + Math.abs(c.bias) * 0.15 + cpathLen * 0.05;
+      if (score < bestScore) { bestScore = score; best = c; }
+      // 无碰撞且偏移最小即可早退（优先简洁）
+      if (!hit && Math.abs(c.bias) < 1) break;
+    }
+    return bezier(p1, p2, best.c1, best.c2);
   }
 
   function syncNodes() {
@@ -384,14 +484,14 @@
       const a = state.nodes.find(n => n.id === e.from);
       const b = state.nodes.find(n => n.id === e.to);
       if (!a || !b) continue;
-      const d = curve(nodeCenter(a), nodeCenter(b));
+      const d = curve(nodeCenter(a), nodeCenter(b), e.from, e.to);
       const sel = selEdge && selEdge.id === e.id ? " sel" : "";
       html += `<path class="hit" data-edge="${e.id}" d="${d}"></path>`;
       html += `<path class="wire${sel}" data-edge="${e.id}" d="${d}"></path>`;
     }
     if (tempWire) {
       const a = state.nodes.find(n => n.id === tempWire.from);
-      if (a) html += `<path class="temp" d="${curve(nodeCenter(a), tempWire.to)}"></path>`;
+      if (a) html += `<path class="temp" d="${curveSimple(nodeCenter(a), tempWire.to)}"></path>`;
     }
     svg.innerHTML = html;
   }
@@ -525,6 +625,22 @@
     recomputeWeights();
     save(); draw(); renderInspector(); toast("已删除节点");
   }
+  // 统一删除当前选中：多选时删整个集合，单选/连线时删单个
+  function deleteSelected() {
+    if (selNodes.size > 1) {
+      const ids = new Set(selNodes);
+      state.nodes = state.nodes.filter(x => !ids.has(x.id));
+      state.edges = state.edges.filter(e => !ids.has(e.from) && !ids.has(e.to));
+      selNodes = new Set(); selNode = null; selEdge = null;
+      recomputeWeights();
+      save(); draw(); renderInspector();
+      toast("已删除 " + ids.size + " 个节点");
+    } else if (selNode) {
+      deleteNode(selNode);
+    } else if (selEdge) {
+      deleteEdge(selEdge);
+    }
+  }
   function deleteEdge(e) {
     state.edges = state.edges.filter(x => x.id !== e.id);
     if (selEdge && selEdge.id === e.id) selEdge = null;
@@ -618,10 +734,10 @@
           toggleNodeInSel(n);
           mode = "idle";
         } else if (selNodes.has(n.id) && selNodes.size > 1) {
-          // 已在多选中 → 进入集体拖动（不清空多选）
+          // 已在多选中 → 进入集体拖动（不清空多选）；记录被点节点，若未拖动则切换焦点
           mode = "dragMulti";
           const w = screenToWorld(e.clientX, e.clientY);
-          dragInfo = { dx: w.x, dy: w.y, moved: false, start: new Map() };
+          dragInfo = { dx: w.x, dy: w.y, moved: false, clickedId: n.id, start: new Map() };
           for (const id of selNodes) {
             const nn = state.nodes.find(x => x.id === id);
             if (nn) dragInfo.start.set(id, { x: nn.x, y: nn.y });
@@ -743,7 +859,13 @@
       if (el) el.style.cursor = "grab";
       if (dragInfo.moved) save();
     } else if (mode === "dragMulti") {
-      if (dragInfo.moved) save();
+      if (dragInfo.moved) {
+        save();
+      } else {
+        // 未拖动 = 点击选区内某节点 → 清空多选，只选中这一个（业界标准：点即单选）
+        const clicked = state.nodes.find(x => x.id === dragInfo.clickedId);
+        if (clicked) select(clicked);
+      }
     } else if (mode === "resize") {
       save();
     } else if (mode === "pan") {
@@ -834,8 +956,7 @@
     const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
     if (typing) return;
     if (e.key === "Delete" || e.key === "Backspace") {
-      if (selNode) deleteNode(selNode);
-      else if (selEdge) deleteEdge(selEdge);
+      deleteSelected();
     } else if (e.key === "Escape") {
       if (mode === "connect") { tempWire = null; renderEdges(); mode = "idle"; viewport.classList.remove("connecting"); }
       if (linkSource != null) cancelLinkSource();
