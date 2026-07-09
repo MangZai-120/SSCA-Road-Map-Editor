@@ -13,5 +13,7 @@ if not exist "node_modules\electron\dist\electron.exe" (
     exit /b 1
   )
 )
-call npm start
+:: 启动后隐藏本 cmd 窗口（electron 窗口正常显示）。用 powershell 后台启动并退出 cmd。
+start "" /b powershell -NoProfile -WindowStyle Hidden -Command "npm start"
+exit
 

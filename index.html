@@ -98,6 +98,8 @@
   }
   .node:hover { box-shadow: var(--shadow-strong); }
   .node.sel { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-strong); }
+  .node.multisel { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,92,231,0.35), var(--shadow); }
+  #marquee { position: absolute; border: 1.5px dashed var(--accent); background: rgba(108, 92, 231, 0.12); pointer-events: none; z-index: 50; display: none; }
   .node.linktarget { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
   .node .bar { height: 6px; background: var(--accent); }
   .node .body { padding: 11px 13px 12px; }
@@ -229,7 +231,7 @@
       <div id="world">
         <svg id="edges"></svg>
       </div>
-      <div id="hint">左键拖空白移动画布 ・ 右键拖节点连线 / 点右上角圆点再点另一节点连线 ・ 双击空白新建节点</div>
+      <div id="hint">右键双击空白新建节点 ・ 左键拖空白框选(Shift追加) ・ 右键拖空白平移 ・ 左键拖节点移动(Ctrl加减选) ・ 右键拖节点连线</div>
     </div>
 
     <div id="inspector">
@@ -245,13 +247,15 @@
     <div class="card">
       <h2>SSCA<b>思路</b>编辑器 · 使用说明</h2>
       <ul>
-        <li><span class="k">左键拖空白</span> 移动整张画布（平移）</li>
-        <li><span class="k">左键拖节点</span> 移动该节点位置</li>
+        <li><span class="k">右键双击空白</span> 新建节点</li>
+        <li><span class="k">右键拖空白</span> 移动整张画布（平移）</li>
+        <li><span class="k">左键拖空白</span> 矩形框选多个节点（按住 Shift 追加选择）</li>
+        <li><span class="k">左键拖节点</span> 移动该节点；若该节点已在多选中则整组移动</li>
+        <li><span class="k">Ctrl+左键点节点</span> 加/减该节点到多选</li>
         <li><span class="k">右键按住节点 → 拖到另一节点</span> 用曲线把两者连接起来</li>
         <li><span class="k">单击节点右上角圆点 → 再单击另一节点</span> 点选式连线（无需拖拽）</li>
         <li><span class="k">单击节点</span> 右侧操作栏可编辑大标题 / 权重 / 小标题 / 备注</li>
         <li><span class="k">权重</span> 每个节点可填非负整数，0=根节点，数值越大权重越小</li>
-        <li><span class="k">双击空白</span> 在此处新建一个节点</li>
         <li><span class="k">单击连线</span> 选中连线，按 <span class="k">Delete</span> 删除</li>
         <li><span class="k">滚轮</span> 缩放画布 ・ <span class="k">Delete</span> 删除选中节点 ・ <span class="k">Esc</span> 取消</li>
       </ul>
@@ -366,7 +370,10 @@
       wbadge.classList.toggle("root", wv === 0);
       big.textContent = n.big || "未命名";
       small.textContent = n.small || "（小标题）";
-      el.classList.toggle("sel", selNode && selNode.id === n.id);
+      const isFocus = selNode && selNode.id === n.id;
+      const isMulti = selNodes.has(n.id);
+      el.classList.toggle("sel", isFocus);
+      el.classList.toggle("multisel", isMulti && !isFocus);
     }
   }
 
@@ -470,19 +477,34 @@
       inspContent.innerHTML =
         '<div class="empty">' +
         '<h4>快速上手</h4><ul>' +
-        '<li><span class="k">左键拖空白</span> 平移画布</li>' +
+        '<li><span class="k">右键双击空白</span> 新建节点</li>' +
+        '<li><span class="k">左键拖空白</span> 矩形框选（Shift追加）・右键拖空白平移画布</li>' +
+        '<li><span class="k">左键拖节点</span> 移动；多选时拖任一节点整组移动</li>' +
         '<li><span class="k">右键拖节点→节点</span> 曲线连接</li>' +
         '<li><span class="k">单击节点</span> 这里编辑备注</li>' +
-        '<li><span class="k">双击空白</span> 新建节点</li>' +
         '</ul>' +
         `<p>当前：节点 ${state.nodes.length} 个 ・ 连线 ${state.edges.length} 条</p>` +
         '</div>';
     }
   }
 
+  // 多选集合 + 框选状态
+  let selNodes = new Set();   // 多选节点 id 集合
+  let marquee = null;        // 框选状态 {sx,sy,ex,ey,additive}
+  let lastRClickUp = { t: 0, x: 0, y: 0 }; // 右键松开时间/坐标（双击判定）
+
   function select(node, edge) {
     selNode = node || null; selEdge = edge || null;
+    if (node) { selNodes = new Set([node.id]); } else { selNodes = new Set(); }
     syncNodes(); renderEdges(); renderInspector();
+  }
+  // Ctrl/Shift+点击节点：加减多选
+  function toggleNodeInSel(n) {
+    if (selNodes.has(n.id)) selNodes.delete(n.id); else selNodes.add(n.id);
+    // 焦点节点：多选非空时取其中一个
+    selNode = selNodes.size ? state.nodes.find(x => selNodes.has(x.id)) : null;
+    if (selNode == null) selEdge = null;
+    syncNodes(); renderInspector();
   }
 
   function addNode(wx, wy, big, small) {
@@ -583,6 +605,7 @@
         return;
       }
       if (e.button === 2) {
+        // 右键节点：拖动拉线（保留）
         mode = "connect";
         dragInfo = { from: n.id };
         tempWire = { from: n.id, to: screenToWorld(e.clientX, e.clientY) };
@@ -590,26 +613,49 @@
         renderEdges();
         e.preventDefault();
       } else if (e.button === 0) {
-        select(n);
-        const w = screenToWorld(e.clientX, e.clientY);
-        mode = "drag";
-        dragInfo = { node: n, dx: w.x - n.x, dy: w.y - n.y, moved: false };
-        nodeEl.style.cursor = "grabbing";
-        nodeEl.parentNode.appendChild(nodeEl);
+        // 左键节点：Ctrl/Shift=加减多选；否则若已在多选集则保留多选进入集体拖动，否则单选
+        if (e.ctrlKey || e.metaKey || e.shiftKey) {
+          toggleNodeInSel(n);
+          mode = "idle";
+        } else if (selNodes.has(n.id) && selNodes.size > 1) {
+          // 已在多选中 → 进入集体拖动（不清空多选）
+          mode = "dragMulti";
+          const w = screenToWorld(e.clientX, e.clientY);
+          dragInfo = { dx: w.x, dy: w.y, moved: false, start: new Map() };
+          for (const id of selNodes) {
+            const nn = state.nodes.find(x => x.id === id);
+            if (nn) dragInfo.start.set(id, { x: nn.x, y: nn.y });
+          }
+        } else {
+          select(n);
+          const w = screenToWorld(e.clientX, e.clientY);
+          mode = "drag";
+          dragInfo = { node: n, dx: w.x - n.x, dy: w.y - n.y, moved: false };
+          nodeEl.style.cursor = "grabbing";
+          nodeEl.parentNode.appendChild(nodeEl);
+        }
+        e.preventDefault();
       }
       return;
     }
 
     if (e.button === 0) {
+      // 左键空白：矩形框选（Shift=追加）；命中连线则单选连线
       if (hitEdge) {
         const e2 = state.edges.find(x => String(x.id) === hitEdge.dataset.edge);
         select(null, e2);
         return;
       }
+      const additive = e.shiftKey || e.ctrlKey || e.metaKey;
+      if (!additive) { selNodes = new Set(); selNode = null; selEdge = null; syncNodes(); }
+      mode = "marquee";
+      dragInfo = { sx: e.clientX, sy: e.clientY, additive: additive, startIds: new Set(selNodes) };
+      viewport.classList.add("marqueeing");
+    } else if (e.button === 2) {
+      // 右键空白：平移画布（保留原行为）
       mode = "pan";
-      dragInfo = { sx: e.clientX, sy: e.clientY, px: state.pan.x, py: state.pan.y, moved: false };
+      dragInfo = { sx: e.clientX, sy: e.clientY, px: state.pan.x, py: state.pan.y, moved: false, startX: e.clientX, startY: e.clientY };
       viewport.classList.add("panning");
-      select(null, null);
     }
   });
 
@@ -627,6 +673,20 @@
       const el = nodeEls[dragInfo.node.id];
       el.style.left = dragInfo.node.x + "px";
       el.style.top  = dragInfo.node.y + "px";
+      renderEdges();
+    } else if (mode === "dragMulti") {
+      // 集体拖动：所有 selNodes 内节点按鼠标世界坐标偏移同步移动
+      const w = screenToWorld(e.clientX, e.clientY);
+      const offX = w.x - dragInfo.dx, offY = w.y - dragInfo.dy;
+      if (Math.abs(offX) > 0.5 || Math.abs(offY) > 0.5) dragInfo.moved = true;
+      for (const [id, sp] of dragInfo.start) {
+        const nn = state.nodes.find(x => x.id === id);
+        if (!nn) continue;
+        nn.x = sp.x + offX;
+        nn.y = sp.y + offY;
+        const el = nodeEls[id];
+        if (el) { el.style.left = nn.x + "px"; el.style.top = nn.y + "px"; }
+      }
       renderEdges();
     } else if (mode === "resize") {
       const di = dragInfo;
@@ -650,6 +710,21 @@
       for (const id in nodeEls) nodeEls[id].classList.remove("linktarget");
       if (tgt && tgt.dataset.id !== String(linkSource)) tgt.classList.add("linktarget");
       renderEdges();
+    } else if (mode === "marquee") {
+      // 框选：实时更新矩形 + 预选（鼠标拖动过程中高亮将要选中的节点）
+      updateMarquee(dragInfo.sx, dragInfo.sy, e.clientX, e.clientY);
+      const box = marqueeRect(dragInfo.sx, dragInfo.sy, e.clientX, e.clientY);
+      selNodes = new Set(dragInfo.startIds);
+      for (const n of state.nodes) {
+        const el = nodeEls[n.id];
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        // 节点中心点落在矩形内即选中
+        if (cx >= box.l && cx <= box.r && cy >= box.t && cy <= box.b) selNodes.add(n.id);
+      }
+      if (selNodes.size) selNode = state.nodes.find(x => selNodes.has(x.id)); else selNode = null;
+      syncNodes();
     }
   });
 
@@ -667,19 +742,70 @@
       const el = nodeEls[dragInfo.node.id];
       if (el) el.style.cursor = "grab";
       if (dragInfo.moved) save();
+    } else if (mode === "dragMulti") {
+      if (dragInfo.moved) save();
     } else if (mode === "resize") {
       save();
     } else if (mode === "pan") {
       if (dragInfo.moved) save();
+      // 右键空白双击检测：未移动 + 距上次右键松开 < 350ms + 位置接近 → 创建节点
+      const moved = Math.hypot(e.clientX - dragInfo.startX, e.clientY - dragInfo.startY);
+      if (!dragInfo.moved && moved < 4) {
+        const now = Date.now();
+        const dist = Math.hypot(e.clientX - lastRClickUp.x, e.clientY - lastRClickUp.y);
+        if (now - lastRClickUp.t < 350 && dist < 6) {
+          const w = screenToWorld(e.clientX, e.clientY);
+          addNode(w.x, w.y);
+          lastRClickUp = { t: 0, x: 0, y: 0 };
+        } else {
+          lastRClickUp = { t: now, x: e.clientX, y: e.clientY };
+        }
+      } else {
+        lastRClickUp = { t: 0, x: 0, y: 0 };
+      }
+    } else if (mode === "marquee") {
+      hideMarquee();
+      renderInspector();
     }
     mode = "idle"; dragInfo = null;
-    viewport.classList.remove("panning", "connecting");
+    viewport.classList.remove("panning", "connecting", "marqueeing");
   });
 
+  // ===== 矩形框选 UI =====
+  function ensureMarqueeEl() {
+    let el = document.getElementById("marquee");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "marquee";
+      viewport.appendChild(el);
+    }
+    return el;
+  }
+  function updateMarquee(ax, ay, bx, by) {
+    const el = ensureMarqueeEl();
+    // 转换为 viewport 相对坐标（#marquee 是 viewport 的绝对定位子元素）
+    const r = viewport.getBoundingClientRect();
+    const l = Math.min(ax, bx) - r.left, t = Math.min(ay, by) - r.top;
+    const w = Math.abs(bx - ax), h = Math.abs(by - ay);
+    el.style.left = l + "px";
+    el.style.top = t + "px";
+    el.style.width = w + "px";
+    el.style.height = h + "px";
+    el.style.display = "block";
+  }
+  function hideMarquee() {
+    const el = document.getElementById("marquee");
+    if (el) el.style.display = "none";
+  }
+  function marqueeRect(ax, ay, bx, by) {
+    return { l: Math.min(ax, bx), r: Math.max(ax, bx), t: Math.min(ay, by), b: Math.max(ay, by) };
+  }
+
+  // 左键双击不再创建节点；创建改为右键双击（见 mouseup pan 分支的双击检测）
   viewport.addEventListener("dblclick", e => {
+    // 允许双击节点进入编辑等默认行为；空白双击不创建（防误触）
     if (e.target.closest(".node") || e.target.closest("path.hit")) return;
-    const w = screenToWorld(e.clientX, e.clientY);
-    addNode(w.x, w.y);
+    e.preventDefault();
   });
 
   viewport.addEventListener("wheel", e => {
@@ -694,8 +820,8 @@
     else if (e.deltaMode === 2) dy *= 400; // page 模式
     // 限幅，防某些驱动报超大 deltaY 造成跳变
     dy = Math.max(-300, Math.min(300, dy));
-    // base=1.0015：dy=-100→×1.16，dy=-10→×1.015，触摸板小幅温和、鼠标滚轮明显但不暴烈
-    const factor = Math.pow(1.0015, -dy);
+    // base=1.006：触摸板（小 deltaY）灵敏跟手、鼠标滚轮（大 deltaY）幅度明显
+    const factor = Math.pow(1.006, -dy);
     const next = Math.min(2.2, Math.max(0.35, old * factor));
     if (Math.abs(next - old) < 1e-4) return; // 已到边界，避免无意义重绘
     state.pan.x = mx - (mx - state.pan.x) * (next / old);
