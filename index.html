@@ -687,7 +687,17 @@
     const r = viewport.getBoundingClientRect();
     const mx = e.clientX - r.left, my = e.clientY - r.top;
     const old = state.zoom;
-    const next = Math.min(2.2, Math.max(0.35, old * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
+    // 平滑缩放：用 deltaY 实际大小驱动，触摸板（小 deltaY 高频）每步温和、鼠标滚轮（大 deltaY）幅度合理。
+    // deltaMode 1(line)/2(page) 归一为像素量，0(pixel) 直接用。factor 控制灵敏度。
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;       // line 模式（每格约 1 行≈16px）
+    else if (e.deltaMode === 2) dy *= 400; // page 模式
+    // 限幅，防某些驱动报超大 deltaY 造成跳变
+    dy = Math.max(-300, Math.min(300, dy));
+    // base=1.0015：dy=-100→×1.16，dy=-10→×1.015，触摸板小幅温和、鼠标滚轮明显但不暴烈
+    const factor = Math.pow(1.0015, -dy);
+    const next = Math.min(2.2, Math.max(0.35, old * factor));
+    if (Math.abs(next - old) < 1e-4) return; // 已到边界，避免无意义重绘
     state.pan.x = mx - (mx - state.pan.x) * (next / old);
     state.pan.y = my - (my - state.pan.y) * (next / old);
     state.zoom = next;
