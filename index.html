@@ -231,7 +231,7 @@
       <div id="world">
         <svg id="edges"></svg>
       </div>
-      <div id="hint">右键双击空白新建节点 ・ 左键拖空白框选(Shift追加) ・ 右键拖空白平移 ・ 左键拖节点移动(Ctrl加减选) ・ 右键拖节点连线</div>
+      <div id="hint">右键双击空白新建节点 ・ 左键拖空白框选(Shift/Ctrl追加) ・ 右键拖空白平移 ・ 左键拖节点移动(Ctrl/Shift加减选) ・ 右键拖节点或点圆点连线 ・ Delete删除选中</div>
     </div>
 
     <div id="inspector">
@@ -578,10 +578,11 @@
         '<div class="empty">' +
         '<h4>快速上手</h4><ul>' +
         '<li><span class="k">右键双击空白</span> 新建节点</li>' +
-        '<li><span class="k">左键拖空白</span> 矩形框选（Shift追加）・右键拖空白平移画布</li>' +
-        '<li><span class="k">左键拖节点</span> 移动；多选时拖任一节点整组移动</li>' +
-        '<li><span class="k">右键拖节点→节点</span> 曲线连接</li>' +
-        '<li><span class="k">单击节点</span> 这里编辑备注</li>' +
+        '<li><span class="k">左键拖空白</span> 矩形框选（Shift/Ctrl 追加）・<span class="k">右键拖空白</span> 平移画布</li>' +
+        '<li><span class="k">左键拖节点</span> 移动；多选时拖任一节点整组移动・<span class="k">Ctrl/Shift+左键点节点</span> 加减多选</li>' +
+        '<li><span class="k">右键拖节点→另一节点</span> 曲线连接・或 <span class="k">点节点右上角圆点→再点另一节点</span> 点选式连线</li>' +
+        '<li><span class="k">单击节点</span> 这里编辑大/小标题、权重、备注</li>' +
+        '<li><span class="k">Delete</span> 删除选中（节点/连线）・<span class="k">滚轮</span> 缩放・<span class="k">Esc</span> 取消</li>' +
         '</ul>' +
         `<p>当前：节点 ${state.nodes.length} 个 ・ 连线 ${state.edges.length} 条</p>` +
         '</div>';
