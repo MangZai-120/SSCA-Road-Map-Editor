@@ -217,14 +217,14 @@
   <div id="toolbar">
     <div class="brand">SSCA<b>思路</b>编辑器</div>
     <button class="btn" id="mapBtn" title="切换 / 管理导图">📁 <span id="mapName">导图</span> ▾</button>
-    <span id="saveTag">已保存</span>
+    <span id="saveTag" data-i18n="saved">已保存</span>
     <div class="spacer"></div>
-    <button class="btn primary" id="addBtn">＋ 新建节点</button>
-    <button class="btn" id="fitBtn">居中视图</button>
-    <button class="btn" id="exportBtn">导出</button>
-    <button class="btn" id="importBtn">导入</button>
-    <button class="btn danger" id="clearBtn">清空</button>
-    <button class="btn" id="helpBtn">帮助</button>
+    <button class="btn primary" id="addBtn" data-i18n="add">＋ 新建节点</button>
+    <button class="btn" id="fitBtn" data-i18n="fit">居中视图</button>
+    <button class="btn" id="exportBtn" data-i18n="exp">导出</button>
+    <button class="btn" id="importBtn" data-i18n="imp">导入</button>
+    <button class="btn danger" id="clearBtn" data-i18n="clr">清空</button>
+    <button class="btn" id="helpBtn" data-i18n="help">帮助</button>
     <!-- 日夜切换开关由脚本动态创建为 <theme-button> 插入“帮助”按钮之后，组件定义见 theme-button.js -->
     <input type="file" id="fileInput" accept="application/json" style="display:none" />
   </div>
@@ -234,7 +234,7 @@
       <div id="world">
         <svg id="edges"></svg>
       </div>
-      <div id="hint">右键双击空白新建节点 ・ 左键拖空白框选(Shift/Ctrl追加) ・ 右键拖空白平移 ・ 左键拖节点移动(Ctrl/Shift加减选) ・ 右键拖节点或点圆点连线 ・ Delete删除选中</div>
+      <div id="hint" data-i18n="hint">右键双击空白新建节点 ・ 左键拖空白框选(Shift/Ctrl追加) ・ 右键拖空白平移 ・ 左键拖节点移动(Ctrl/Shift加减选) ・ 右键拖节点或点圆点连线 ・ Delete删除选中</div>
     </div>
 
     <div id="inspector">
@@ -248,42 +248,42 @@
 
   <div id="help">
     <div class="card">
-      <h2>SSCA<b>思路</b>编辑器 · 使用说明</h2>
+      <h2 data-i18n="helpTitle" data-i18n-html>SSCA<b>思路</b>编辑器 · 使用说明</h2>
       <ul>
-        <li><span class="k">右键双击空白</span> 新建节点</li>
-        <li><span class="k">右键拖空白</span> 移动整张画布（平移）</li>
-        <li><span class="k">左键拖空白</span> 矩形框选多个节点（按住 Shift 追加选择）</li>
-        <li><span class="k">左键拖节点</span> 移动该节点；若该节点已在多选中则整组移动</li>
-        <li><span class="k">Ctrl+左键点节点</span> 加/减该节点到多选</li>
-        <li><span class="k">右键按住节点 → 拖到另一节点</span> 用曲线把两者连接起来</li>
-        <li><span class="k">单击节点右上角圆点 → 再单击另一节点</span> 点选式连线（无需拖拽）</li>
-        <li><span class="k">单击节点</span> 右侧操作栏可编辑大标题 / 权重 / 小标题 / 备注</li>
-        <li><span class="k">权重</span> 每个节点可填非负整数，0=根节点，数值越大权重越小</li>
-        <li><span class="k">单击连线</span> 选中连线，按 <span class="k">Delete</span> 删除</li>
-        <li><span class="k">滚轮</span> 缩放画布 ・ <span class="k">Delete</span> 删除选中节点 ・ <span class="k">Esc</span> 取消</li>
+        <li data-i18n="h1" data-i18n-html><span class="k">右键双击空白</span> 新建节点</li>
+        <li data-i18n="h2" data-i18n-html><span class="k">右键拖空白</span> 移动整张画布（平移）</li>
+        <li data-i18n="h3" data-i18n-html><span class="k">左键拖空白</span> 矩形框选多个节点（按住 Shift 追加选择）</li>
+        <li data-i18n="h4" data-i18n-html><span class="k">左键拖节点</span> 移动该节点；若该节点已在多选中则整组移动</li>
+        <li data-i18n="h5" data-i18n-html><span class="k">Ctrl+左键点节点</span> 加/减该节点到多选</li>
+        <li data-i18n="h6" data-i18n-html><span class="k">右键按住节点 → 拖到另一节点</span> 用曲线把两者连接起来</li>
+        <li data-i18n="h7" data-i18n-html><span class="k">单击节点右上角圆点 → 再单击另一节点</span> 点选式连线（无需拖拽）</li>
+        <li data-i18n="h8" data-i18n-html><span class="k">单击节点</span> 右侧操作栏可编辑大标题 / 权重 / 小标题 / 备注</li>
+        <li data-i18n="h9" data-i18n-html><span class="k">权重</span> 每个节点可填非负整数，0=根节点，数值越大权重越小</li>
+        <li data-i18n="h10" data-i18n-html><span class="k">单击连线</span> 选中连线，按 <span class="k">Delete</span> 删除</li>
+        <li data-i18n="h11" data-i18n-html><span class="k">滚轮</span> 缩放画布 ・ <span class="k">Delete</span> 删除选中节点 ・ <span class="k">Esc</span> 取消</li>
       </ul>
-      <button class="btn primary" id="helpClose" style="width:100%">开始使用</button>
+      <button class="btn primary" id="helpClose" style="width:100%" data-i18n="helpStart">开始使用</button>
     </div>
   </div>
 
   <div id="mapMgr">
     <div class="card">
       <div class="mm-head">
-        <h2>📁 我的导图</h2>
-        <button class="btn primary" id="newMapBtn">＋ 新建导图</button>
+        <h2 data-i18n="myMaps">📁 我的导图</h2>
+        <button class="btn primary" id="newMapBtn" data-i18n="newMap">＋ 新建导图</button>
       </div>
       <div class="mm-list" id="mapList"></div>
-      <button class="btn" id="mapMgrClose" style="width:100%;margin-top:4px">关闭</button>
+      <button class="btn" id="mapMgrClose" style="width:100%;margin-top:4px" data-i18n="close">关闭</button>
     </div>
   </div>
 
   <div id="inputModal">
     <div class="card">
-      <h3 id="imTitle">输入</h3>
+      <h3 id="imTitle" data-i18n="input">输入</h3>
       <input type="text" id="imInput" autocomplete="off" spellcheck="false" />
       <div class="im-actions">
-        <button class="btn" id="imCancel">取消</button>
-        <button class="btn primary" id="imOk">确定</button>
+        <button class="btn" id="imCancel" data-i18n="cancel">取消</button>
+        <button class="btn primary" id="imOk" data-i18n="ok">确定</button>
       </div>
     </div>
   </div>
@@ -584,6 +584,112 @@
 "use strict";
 (function () {
   const NODE_W = 208, GRID = 26;
+
+  // ===== 中英双语 i18n =====
+  const LANG_KEY = "ssca_idea_lang";
+  const I18N = {
+    zh: {
+      add:"＋ 新建节点", fit:"居中视图", exp:"导出", imp:"导入", clr:"清空", help:"帮助", langNext:"EN", langTitle:"切换语言 / Language",
+      saved:"已保存", unsaved:"未保存…", saveFail:"保存失败",
+      hint:"右键双击空白新建节点 ・ 左键拖空白框选(Shift/Ctrl追加) ・ 右键拖空白平移 ・ 左键拖节点移动(Ctrl/Shift加减选) ・ 右键拖节点或点圆点连线 ・ Delete删除选中",
+      helpTitle:'SSCA<b>思路</b>编辑器 · 使用说明',
+      h1:'<span class="k">右键双击空白</span> 新建节点',
+      h2:'<span class="k">右键拖空白</span> 移动整张画布（平移）',
+      h3:'<span class="k">左键拖空白</span> 矩形框选多个节点（按住 Shift 追加选择）',
+      h4:'<span class="k">左键拖节点</span> 移动该节点；若该节点已在多选中则整组移动',
+      h5:'<span class="k">Ctrl+左键点节点</span> 加/减该节点到多选',
+      h6:'<span class="k">右键按住节点 → 拖到另一节点</span> 用曲线把两者连接起来',
+      h7:'<span class="k">单击节点右上角圆点 → 再单击另一节点</span> 点选式连线（无需拖拽）',
+      h8:'<span class="k">单击节点</span> 右侧操作栏可编辑大标题 / 权重 / 小标题 / 备注',
+      h9:'<span class="k">权重</span> 每个节点可填非负整数，0=根节点，数值越大权重越小',
+      h10:'<span class="k">单击连线</span> 选中连线，按 <span class="k">Delete</span> 删除',
+      h11:'<span class="k">滚轮</span> 缩放画布 ・ <span class="k">Delete</span> 删除选中节点 ・ <span class="k">Esc</span> 取消',
+      helpStart:"开始使用",
+      panelTitle:"操作栏", panelSub:"选中一个节点以查看 / 编辑备注",
+      quick:"快速上手",
+      q1:'<span class="k">右键双击空白</span> 新建节点',
+      q2:'<span class="k">左键拖空白</span> 矩形框选（Shift/Ctrl 追加）・<span class="k">右键拖空白</span> 平移画布',
+      q3:'<span class="k">左键拖节点</span> 移动；多选时拖任一节点整组移动・<span class="k">Ctrl/Shift+左键点节点</span> 加减多选',
+      q4:'<span class="k">右键拖节点→另一节点</span> 曲线连接・或 <span class="k">点节点右上角圆点→再点另一节点</span> 点选式连线',
+      q5:'<span class="k">单击节点</span> 这里编辑大/小标题、权重、备注',
+      q6:'<span class="k">Delete</span> 删除选中（节点/连线）・<span class="k">滚轮</span> 缩放・<span class="k">Esc</span> 取消',
+      stat:"当前：节点 {n} 个 ・ 连线 {e} 条",
+      editTitle:"编辑节点", editSub:"修改标题与备注，自动保存",
+      lBig:"大标题（实例名字）", phBig:"例如：使魔·火球术",
+      lWeight:"权重（0=根节点 ・ 数值越大权重越小）", cbWeight:"自动按上游连接计算（取上游最大权重 +1）", phWeight:"手动指定一个非负整数",
+      lSmall:"小标题（大致说法，可按回车换行）", phSmall:"例如：消耗法力的远程火球",
+      lNote:"备注", phNote:"在这里写详细思路 / 数值 / 待办……",
+      dup:"复制节点", delNode:"删除节点",
+      linkTitle:"连线", linkSub:"两个节点之间的关联", linkSel:"已选中一条连线", delLink:"删除连线",
+      root:"根节点", wPrefix:"权重", untitled:"未命名", subPh:"（小标题）",
+      myMaps:"📁 我的导图", newMap:"＋ 新建导图", close:"关闭", current:"当前", rename:"重命名", del:"删除",
+      newMapPrompt:"新建导图 · 起个名字", renameMap:"重命名导图", cancel:"取消", ok:"确定", input:"输入",
+      tCopy:"已复制节点", tDelNode:"已删除节点", tDelNodes:"已删除 {n} 个节点", tDelEdge:"已删除连线",
+      tConnected:"这两个节点已经连过了", tConnDone:"已连接", tLinkStart:"已开始连线 ・ 点击另一个节点完成 ・ Esc 取消",
+      tCleared:"已清空", tExported:"已导出 JSON", tImported:"已导入", tImportFail:"导入失败：文件格式不正确",
+      tDark:"已切换到黑暗模式", tLight:"已切换到明亮模式", tMapNew:"已创建并进入新导图", tKeepOne:"至少保留一个导图", tMapDel:"已删除导图",
+      cfClear:"确定清空所有节点和连线？此操作不可撤销。", cfDelMap:'确定删除导图「{name}」？此操作不可撤销。'
+    },
+    en: {
+      add:"+ New Node", fit:"Fit View", exp:"Export", imp:"Import", clr:"Clear", help:"Help", langNext:"中", langTitle:"切换语言 / Language",
+      saved:"Saved", unsaved:"Unsaved…", saveFail:"Save failed",
+      hint:"Right-dbl-click blank: new node ・ Left-drag blank: box-select (Shift/Ctrl add) ・ Right-drag blank: pan ・ Left-drag node: move (Ctrl/Shift multi) ・ Right-drag node or dot: connect ・ Delete: remove",
+      helpTitle:'SSCA <b>Mind</b> Editor · Guide',
+      h1:'<span class="k">Right dbl-click blank</span> New node',
+      h2:'<span class="k">Right-drag blank</span> Pan the whole canvas',
+      h3:'<span class="k">Left-drag blank</span> Box-select nodes (hold Shift to add)',
+      h4:'<span class="k">Left-drag node</span> Move it; moves the group if multi-selected',
+      h5:'<span class="k">Ctrl+click node</span> Add / remove from selection',
+      h6:'<span class="k">Right-hold node → drag to another</span> Connect them with a curve',
+      h7:'<span class="k">Click the node dot → click another node</span> Click-to-connect (no drag)',
+      h8:'<span class="k">Click a node</span> Edit title / weight / subtitle / notes in the panel',
+      h9:'<span class="k">Weight</span> A non-negative integer; 0 = root, larger = lower priority',
+      h10:'<span class="k">Click a link</span> Select it, press <span class="k">Delete</span> to remove',
+      h11:'<span class="k">Wheel</span> Zoom ・ <span class="k">Delete</span> remove selected ・ <span class="k">Esc</span> cancel',
+      helpStart:"Get Started",
+      panelTitle:"Panel", panelSub:"Select a node to view / edit notes",
+      quick:"Quick Start",
+      q1:'<span class="k">Right dbl-click blank</span> New node',
+      q2:'<span class="k">Left-drag blank</span> Box-select (Shift/Ctrl add) ・ <span class="k">Right-drag blank</span> Pan',
+      q3:'<span class="k">Left-drag node</span> Move; multi-select moves group ・ <span class="k">Ctrl/Shift+click</span> multi-select',
+      q4:'<span class="k">Right-drag node→node</span> Connect ・ or <span class="k">click dot→another node</span> click-connect',
+      q5:'<span class="k">Click a node</span> Edit title / subtitle / weight / notes here',
+      q6:'<span class="k">Delete</span> Remove selected ・ <span class="k">Wheel</span> Zoom ・ <span class="k">Esc</span> Cancel',
+      stat:"Now: {n} nodes ・ {e} links",
+      editTitle:"Edit Node", editSub:"Edit titles & notes, auto-saved",
+      lBig:"Title (instance name)", phBig:"e.g. Familiar · Fireball",
+      lWeight:"Weight (0 = root ・ larger = lower priority)", cbWeight:"Auto from upstream (max upstream weight +1)", phWeight:"Enter a non-negative integer",
+      lSmall:"Subtitle (brief, Enter for newline)", phSmall:"e.g. A ranged fireball that costs mana",
+      lNote:"Notes", phNote:"Write detailed ideas / numbers / todos…",
+      dup:"Duplicate", delNode:"Delete Node",
+      linkTitle:"Link", linkSub:"A link between two nodes", linkSel:"A link is selected", delLink:"Delete Link",
+      root:"Root", wPrefix:"Weight", untitled:"Untitled", subPh:"(subtitle)",
+      myMaps:"📁 My Maps", newMap:"+ New Map", close:"Close", current:"Current", rename:"Rename", del:"Delete",
+      newMapPrompt:"New map · name it", renameMap:"Rename map", cancel:"Cancel", ok:"OK", input:"Input",
+      tCopy:"Node duplicated", tDelNode:"Node deleted", tDelNodes:"Deleted {n} nodes", tDelEdge:"Link deleted",
+      tConnected:"These nodes are already connected", tConnDone:"Connected", tLinkStart:"Linking ・ click another node ・ Esc to cancel",
+      tCleared:"Cleared", tExported:"JSON exported", tImported:"Imported", tImportFail:"Import failed: invalid format",
+      tDark:"Switched to dark mode", tLight:"Switched to light mode", tMapNew:"New map created", tKeepOne:"Keep at least one map", tMapDel:"Map deleted",
+      cfClear:"Clear all nodes and links? This cannot be undone.", cfDelMap:'Delete map "{name}"? This cannot be undone.'
+    }
+  };
+  let curLang = "zh";
+  function t(k){ var d = I18N[curLang] || I18N.zh; return (d[k] != null) ? d[k] : (I18N.zh[k] != null ? I18N.zh[k] : k); }
+  function detectLang(){ try { var s = localStorage.getItem(LANG_KEY); if (s === "zh" || s === "en") return s; } catch(e){} var n = (navigator.language || navigator.userLanguage || "zh").toLowerCase(); return n.indexOf("zh") === 0 ? "zh" : "en"; }
+  function applyLang(lang){
+    curLang = (lang === "en") ? "en" : "zh";
+    document.documentElement.setAttribute("lang", curLang === "en" ? "en" : "zh-CN");
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var k = el.getAttribute("data-i18n");
+      if (el.hasAttribute("data-i18n-html")) el.innerHTML = t(k); else el.textContent = t(k);
+    });
+    document.querySelectorAll("[data-i18n-ph]").forEach(function(el){ el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
+    var lb = document.getElementById("langBtn"); if (lb) { lb.textContent = t("langNext"); lb.title = t("langTitle"); }
+    if (typeof renderInspector === "function") renderInspector();
+    var mm = document.getElementById("mapMgr"); if (mm && mm.classList.contains("show") && typeof renderMapList === "function") renderMapList();
+    try { localStorage.setItem(LANG_KEY, curLang); } catch (e) {}
+  }
+
   const viewport = document.getElementById("viewport");
   const world    = document.getElementById("world");
   const svg       = document.getElementById("edges");
@@ -759,10 +865,10 @@
       const small = el.querySelector(".t-small");
       const wbadge = el.querySelector(".wbadge");
       const wv = (n.weight == null) ? 0 : n.weight;
-      wbadge.textContent = (wv === 0) ? "根节点" : ("权重 " + wv);
+      wbadge.textContent = (wv === 0) ? t("root") : (t("wPrefix") + " " + wv);
       wbadge.classList.toggle("root", wv === 0);
-      big.textContent = n.big || "未命名";
-      small.textContent = n.small || "（小标题）";
+      big.textContent = n.big || t("untitled");
+      small.textContent = n.small || t("subPh");
       const isFocus = selNode && selNode.id === n.id;
       const isMulti = selNodes.has(n.id);
       el.classList.toggle("sel", isFocus);
@@ -793,18 +899,18 @@
 
   function renderInspector() {
     if (selNode) {
-      inspTitle.textContent = "编辑节点";
-      inspSub.textContent = "修改标题与备注，自动保存";
+      inspTitle.textContent = t("editTitle");
+      inspSub.textContent = t("editSub");
       inspContent.innerHTML =
-        '<div class="field"><label>大标题（实例名字）</label><input id="fBig" type="text" placeholder="例如：使魔·火球术"></div>' +
-        '<div class="field"><label>权重（0=根节点 ・ 数值越大权重越小）</label>' +
-          '<label class="wauto"><input id="fWeightAuto" type="checkbox"> 自动按上游连接计算（取上游最大权重 +1）</label>' +
-          '<input id="fWeight" type="number" min="0" step="1" placeholder="手动指定一个非负整数"></div>' +
-        '<div class="field"><label>小标题（大致说法，可按回车换行）</label><textarea id="fSmall" placeholder="例如：消耗法力的远程火球"></textarea></div>' +
-        '<div class="field"><label>备注</label><textarea id="fNote" placeholder="在这里写详细思路 / 数值 / 待办……"></textarea></div>' +
+        '<div class="field"><label>' + t("lBig") + '</label><input id="fBig" type="text" placeholder="' + t("phBig") + '"></div>' +
+        '<div class="field"><label>' + t("lWeight") + '</label>' +
+          '<label class="wauto"><input id="fWeightAuto" type="checkbox"> ' + t("cbWeight") + '</label>' +
+          '<input id="fWeight" type="number" min="0" step="1" placeholder="' + t("phWeight") + '"></div>' +
+        '<div class="field"><label>' + t("lSmall") + '</label><textarea id="fSmall" placeholder="' + t("phSmall") + '"></textarea></div>' +
+        '<div class="field"><label>' + t("lNote") + '</label><textarea id="fNote" placeholder="' + t("phNote") + '"></textarea></div>' +
         '<div class="insp-actions">' +
-          '<button class="btn" id="dupBtn">复制节点</button>' +
-          '<button class="btn danger" id="delBtn">删除节点</button>' +
+          '<button class="btn" id="dupBtn">' + t("dup") + '</button>' +
+          '<button class="btn danger" id="delBtn">' + t("delNode") + '</button>' +
         '</div>';
       const fBig = document.getElementById("fBig");
       const fWeight = document.getElementById("fWeight");
@@ -855,29 +961,29 @@
       document.getElementById("delBtn").onclick = () => deleteNode(selNode);
       document.getElementById("dupBtn").onclick = () => duplicateNode(selNode);
     } else if (selEdge) {
-      inspTitle.textContent = "连线";
-      inspSub.textContent = "两个节点之间的关联";
+      inspTitle.textContent = t("linkTitle");
+      inspSub.textContent = t("linkSub");
       const a = state.nodes.find(n => n.id === selEdge.from);
       const b = state.nodes.find(n => n.id === selEdge.to);
       inspContent.innerHTML =
-        `<div class="empty"><h4>已选中一条连线</h4>` +
+        `<div class="empty"><h4>` + t("linkSel") + `</h4>` +
         `<p><b>${(a&&a.big)||"?"}</b> → <b>${(b&&b.big)||"?"}</b></p></div>` +
-        '<div class="insp-actions"><button class="btn danger" id="delEdge">删除连线</button></div>';
+        '<div class="insp-actions"><button class="btn danger" id="delEdge">' + t("delLink") + '</button></div>';
       document.getElementById("delEdge").onclick = () => deleteEdge(selEdge);
     } else {
-      inspTitle.textContent = "操作栏";
-      inspSub.textContent = "选中一个节点以查看 / 编辑备注";
+      inspTitle.textContent = t("panelTitle");
+      inspSub.textContent = t("panelSub");
       inspContent.innerHTML =
         '<div class="empty">' +
-        '<h4>快速上手</h4><ul>' +
-        '<li><span class="k">右键双击空白</span> 新建节点</li>' +
-        '<li><span class="k">左键拖空白</span> 矩形框选（Shift/Ctrl 追加）・<span class="k">右键拖空白</span> 平移画布</li>' +
-        '<li><span class="k">左键拖节点</span> 移动；多选时拖任一节点整组移动・<span class="k">Ctrl/Shift+左键点节点</span> 加减多选</li>' +
-        '<li><span class="k">右键拖节点→另一节点</span> 曲线连接・或 <span class="k">点节点右上角圆点→再点另一节点</span> 点选式连线</li>' +
-        '<li><span class="k">单击节点</span> 这里编辑大/小标题、权重、备注</li>' +
-        '<li><span class="k">Delete</span> 删除选中（节点/连线）・<span class="k">滚轮</span> 缩放・<span class="k">Esc</span> 取消</li>' +
+        '<h4>' + t("quick") + '</h4><ul>' +
+        '<li>' + t("q1") + '</li>' +
+        '<li>' + t("q2") + '</li>' +
+        '<li>' + t("q3") + '</li>' +
+        '<li>' + t("q4") + '</li>' +
+        '<li>' + t("q5") + '</li>' +
+        '<li>' + t("q6") + '</li>' +
         '</ul>' +
-        `<p>当前：节点 ${state.nodes.length} 个 ・ 连线 ${state.edges.length} 条</p>` +
+        '<p>' + t("stat").replace("{n}", state.nodes.length).replace("{e}", state.edges.length) + '</p>' +
         '</div>';
     }
   }
@@ -910,14 +1016,14 @@
     const c = { id: state.nextId++, x: n.x + 28, y: n.y + 28, w: n.w || NODE_W,
                 big: n.big, small: n.small, note: n.note,
                 weight: (n.weight == null ? 0 : n.weight), weightAuto: n.weightAuto !== false };
-    state.nodes.push(c); recomputeWeights(); save(); draw(); select(c); toast("已复制节点");
+    state.nodes.push(c); recomputeWeights(); save(); draw(); select(c); toast(t("tCopy"));
   }
   function deleteNode(n) {
     state.nodes = state.nodes.filter(x => x.id !== n.id);
     state.edges = state.edges.filter(e => e.from !== n.id && e.to !== n.id);
     if (selNode && selNode.id === n.id) selNode = null;
     recomputeWeights();
-    save(); draw(); renderInspector(); toast("已删除节点");
+    save(); draw(); renderInspector(); toast(t("tDelNode"));
   }
   // 统一删除当前选中：多选时删整个集合，单选/连线时删单个
   function deleteSelected() {
@@ -928,7 +1034,7 @@
       selNodes = new Set(); selNode = null; selEdge = null;
       recomputeWeights();
       save(); draw(); renderInspector();
-      toast("已删除 " + ids.size + " 个节点");
+      toast(t("tDelNodes").replace("{n}", ids.size));
     } else if (selNode) {
       deleteNode(selNode);
     } else if (selEdge) {
@@ -939,16 +1045,16 @@
     state.edges = state.edges.filter(x => x.id !== e.id);
     if (selEdge && selEdge.id === e.id) selEdge = null;
     recomputeWeights();
-    save(); draw(); renderInspector(); toast("已删除连线");
+    save(); draw(); renderInspector(); toast(t("tDelEdge"));
   }
   function connect(fromId, toId) {
     if (fromId === toId) return;
     if (state.edges.find(e => (e.from === fromId && e.to === toId) || (e.from === toId && e.to === fromId))) {
-      toast("这两个节点已经连过了"); return;
+      toast(t("tConnected")); return;
     }
     state.edges.push({ id: "e" + (state.nextId++), from: fromId, to: toId });
     recomputeWeights();
-    save(); syncNodes(); renderEdges(); renderInspector(); toast("已连接");
+    save(); syncNodes(); renderEdges(); renderInspector(); toast(t("tConnDone"));
   }
 
   let mode = "idle";
@@ -964,7 +1070,7 @@
       if (d) d.classList.toggle("active", String(k) === String(id));
     }
     renderEdges();
-    toast("已开始连线 ・ 点击另一个节点完成 ・ Esc 取消");
+    toast(t("tLinkStart"));
   }
   function cancelLinkSource() {
     linkSource = null; tempWire = null;
@@ -1259,11 +1365,11 @@
   });
 
   let saveTimer = null;
-  function scheduleSave() { saveTag.textContent = "未保存…"; clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
+  function scheduleSave() { saveTag.textContent = t("unsaved"); clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
   function save() {
     clearTimeout(saveTimer);
-    try { localStorage.setItem(mapKey(currentMapId), JSON.stringify(state)); saveTag.textContent = "已保存"; }
-    catch (err) { saveTag.textContent = "保存失败"; }
+    try { localStorage.setItem(mapKey(currentMapId), JSON.stringify(state)); saveTag.textContent = t("saved"); }
+    catch (err) { saveTag.textContent = t("saveFail"); }
   }
   function load() {
     try {
@@ -1297,9 +1403,9 @@
     applyWorld(); save();
   };
   document.getElementById("clearBtn").onclick = () => {
-    if (!state.nodes.length || confirm("确定清空所有节点和连线？此操作不可撤销。")) {
+    if (!state.nodes.length || confirm(t("cfClear"))) {
       state.nodes = []; state.edges = []; selNode = selEdge = null;
-      save(); draw(); renderInspector(); toast("已清空");
+      save(); draw(); renderInspector(); toast(t("tCleared"));
     }
   };
   document.getElementById("exportBtn").onclick = () => {
@@ -1307,7 +1413,7 @@
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "SSCA思路-" + new Date().toISOString().slice(0, 10) + ".json";
-    a.click(); URL.revokeObjectURL(a.href); toast("已导出 JSON");
+    a.click(); URL.revokeObjectURL(a.href); toast(t("tExported"));
   };
   const fileInput = document.getElementById("fileInput");
   document.getElementById("importBtn").onclick = () => fileInput.click();
@@ -1320,8 +1426,8 @@
         if (!d.nodes) throw new Error("格式不对");
         state = Object.assign({ nextId: 1, pan: { x: 120, y: 90 }, zoom: 1 }, d);
         recomputeWeights();
-        selNode = selEdge = null; save(); draw(); renderInspector(); toast("已导入");
-      } catch (err) { toast("导入失败：文件格式不正确"); }
+        selNode = selEdge = null; save(); draw(); renderInspector(); toast(t("tImported"));
+      } catch (err) { toast(t("tImportFail")); }
     };
     reader.readAsText(f); fileInput.value = "";
   };
@@ -1348,10 +1454,18 @@
     if (dark === darkMode) return;
     darkMode = dark;
     applyTheme(darkMode);
-    toast(darkMode ? "已切换到黑暗模式" : "已切换到明亮模式");
+    toast(darkMode ? t("tDark") : t("tLight"));
   });
   const _helpBtn = document.getElementById("helpBtn");
   if (_helpBtn) _helpBtn.insertAdjacentElement("afterend", themeBtn);
+  // 语言切换按钮（中/EN）
+  const langBtn = document.createElement("button");
+  langBtn.id = "langBtn";
+  langBtn.className = "btn";
+  langBtn.onclick = () => { applyLang(curLang === "en" ? "zh" : "en"); };
+  if (_helpBtn) _helpBtn.insertAdjacentElement("afterend", langBtn);
+  // 初始化界面语言（localStorage 优先，否则按浏览器语言自动检测）
+  applyLang(detectLang());
 
   const mapMgr = document.getElementById("mapMgr");
   const mapList = document.getElementById("mapList");
@@ -1421,12 +1535,12 @@
     mapList.innerHTML = maps.map(m => {
       const s = mapStats(m.id), cur = m.id === currentMapId;
       return '<div class="mm-item' + (cur ? " current" : "") + '">' +
-        '<div class="mm-info"><div class="mm-name">' + escapeHtml(m.name) + (cur ? ' <span class="cur-tag">当前</span>' : "") + "</div>" +
+        '<div class="mm-info"><div class="mm-name">' + escapeHtml(m.name) + (cur ? ' <span class="cur-tag">' + t("current") + '</span>' : "") + "</div>" +
         '<div class="mm-meta">' + s.n + " 个节点 · " + s.e + " 连线</div></div>" +
         '<div class="mm-actions">' +
         '<button class="btn" data-act="open" data-id="' + m.id + '">' + (cur ? "当前" : "打开") + "</button>" +
-        '<button class="btn" data-act="rename" data-id="' + m.id + '">重命名</button>' +
-        '<button class="btn danger" data-act="del" data-id="' + m.id + '">删除</button>' +
+        '<button class="btn" data-act="rename" data-id="' + m.id + '">' + t("rename") + '</button>' +
+        '<button class="btn danger" data-act="del" data-id="' + m.id + '">' + t("del") + '</button>' +
         "</div></div>";
     }).join("");
   }
@@ -1441,21 +1555,21 @@
   }
   async function newMap() {
     const def = "导图 " + (maps.length + 1);
-    const name = await promptInput("新建导图 · 起个名字", def);
+    const name = await promptInput(t("newMapPrompt"), def);
     if (name === null) return;
     const id = uid();
     maps.push({ id: id, name: name.trim() || def }); saveMaps();
     try { localStorage.setItem(mapKey(id), JSON.stringify(freshState())); } catch (e) {}
-    switchMap(id); mapMgr.classList.remove("show"); toast("已创建并进入新导图");
+    switchMap(id); mapMgr.classList.remove("show"); toast(t("tMapNew"));
   }
   async function renameMap(m) {
-    const name = await promptInput("重命名导图", m.name);
+    const name = await promptInput(t("renameMap"), m.name);
     if (name === null) return;
     m.name = name.trim() || m.name; saveMaps(); renderMapList(); updateMapName();
   }
   function deleteMap(m) {
-    if (maps.length <= 1) { toast("至少保留一个导图"); return; }
-    if (!confirm("确定删除导图「" + m.name + "」？此操作不可撤销。")) return;
+    if (maps.length <= 1) { toast(t("tKeepOne")); return; }
+    if (!confirm(t("cfDelMap").replace("{name}", m.name))) return;
     try { localStorage.removeItem(mapKey(m.id)); } catch (e) {}
     const wasCurrent = currentMapId === m.id;
     maps = maps.filter(x => x.id !== m.id); saveMaps();
@@ -1465,7 +1579,7 @@
       for (const k in nodeEls) { nodeEls[k].remove(); delete nodeEls[k]; }
       draw(); renderInspector(); updateMapName();
     }
-    renderMapList(); toast("已删除导图");
+    renderMapList(); toast(t("tMapDel"));
   }
   document.getElementById("mapBtn").onclick = () => { renderMapList(); mapMgr.classList.add("show"); };
   document.getElementById("mapMgrClose").onclick = () => mapMgr.classList.remove("show");
